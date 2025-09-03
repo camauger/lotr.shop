@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Packaging
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+
+# OS / Editors
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Project data (keep placeholders)
+input_raw/*
+processed/*
+upload/*
+!input_raw/.gitkeep
+!processed/.gitkeep
+!upload/.gitkeep
+
+# Env / secrets
+.env
+*.secret
+
+# Generated CSVs
+listings_ebay_*.csv
+
+# Generated manifests / URL maps
+processed/manifest.json
+processed/image_urls.json
+processed/image_urls_ebay.json

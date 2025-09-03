@@ -1,0 +1,89 @@
+import json
+from pathlib import Path
+from typing import Dict
+
+import yaml
+
+try:
+    from ebaysdk.trading import Connection as Trading
+except Exception:  # pragma: no cover
+    Trading = None  # type: ignore
+
+
+def load_settings(path: str = "config/settings.yaml") -> Dict:
+    with open(path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+def upload_picture_service(
+    settings: Dict, processed_dir: str = "processed"
+) -> Dict[str, Dict[str, str]]:
+    if Trading is None:
+        raise RuntimeError("ebaysdk not installed or import failed")
+
+    creds = settings.get("ebay_api", {})
+    api = Trading(
+        config_file=None,
+        appid=creds.get("app_id"),
+        devid=creds.get("dev_id"),
+        certid=creds.get("cert_id"),
+        token=creds.get("auth_token"),
+        domain=(
+            "api.sandbox.ebay.com"
+            if creds.get("environment") == "sandbox"
+            else "api.ebay.com"
+        ),
+    )
+
+    mapping: Dict[str, Dict[str, str]] = {}
+
+    for recto_file in Path(processed_dir).glob("*_recto.jpg"):
+        sku = recto_file.name.replace("_recto.jpg", "")
+        verso_file = recto_file.with_name(f"{sku}_verso.jpg")
+
+        # Upload recto
+        response_recto = api.execute(
+            "UploadSiteHostedPictures",
+            {
+                "PictureSet": "Supersize",
+                "ExternalPictureURL": None,
+                "PictureName": f"{sku}_recto",
+                "PictureData": recto_file.read_bytes(),
+            },
+        )
+        recto_url = (
+            response_recto.dict().get("SiteHostedPictureDetails", {}).get("FullURL")
+        )
+
+        # Upload verso
+        response_verso = api.execute(
+            "UploadSiteHostedPictures",
+            {
+                "PictureSet": "Supersize",
+                "ExternalPictureURL": None,
+                "PictureName": f"{sku}_verso",
+                "PictureData": verso_file.read_bytes(),
+            },
+        )
+        verso_url = (
+            response_verso.dict().get("SiteHostedPictureDetails", {}).get("FullURL")
+        )
+
+        mapping[sku] = {"recto": recto_url, "verso": verso_url}
+
+    return mapping
+
+
+def main() -> None:
+    settings = load_settings()
+    mapping = upload_picture_service(settings, settings["paths"]["processed"])
+    with open(
+        Path(settings["paths"]["processed"]) / "image_urls_ebay.json",
+        "w",
+        encoding="utf-8",
+    ) as f:
+        json.dump(mapping, f, ensure_ascii=False, indent=2)
+
+
+if __name__ == "__main__":
+    main()

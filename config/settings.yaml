@@ -1,0 +1,55 @@
+# Global settings for LOTR TCG shop automation
+
+currency: CAD
+
+marketplaces:
+  default: "ebay.com"
+  additional:
+    - "ebay.ca"
+    - "ebay.fr"
+  language_rules:
+    ebay.com: en
+    ebay.ca: en
+    ebay.fr: fr
+  pricing:
+    identical_across_sites: true
+
+images:
+  output_size_px: 1600
+  jpeg_quality: 90
+  color_space: sRGB
+  background: white
+  recto_suffix: "_recto.jpg"
+  verso_suffix: "_verso.jpg"
+
+sku:
+  pattern: "LOTR-<SET>-<NUM>-<QUAL>"
+  qualifiers_order:
+    - foil_flag
+    - condition
+    - language
+  languages_allowed:
+    - EN
+    - FR
+    - DE
+    - IT
+    - ES
+
+paths:
+  input_raw: "input_raw"
+  processed: "processed"
+  upload: "upload"
+  templates: "templates"
+
+cloudinary:
+  enabled: true
+  cloud_name: ""
+  api_key: ""
+  api_secret: ""
+
+ebay_api:
+  environment: sandbox  # or production
+  app_id: ""
+  cert_id: ""
+  dev_id: ""
+  auth_token: ""

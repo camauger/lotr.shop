@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="{{ 'fr' if marketplace == 'ebay.fr' else 'en' }}">
+  <head>
+    <meta charset="utf-8">
+    <title>{{ title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body { font-family: Arial, sans-serif; color: #222; line-height: 1.5; }
+      .meta { font-size: 0.95em; color: #555; }
+      .section { margin-top: 12px; }
+      h1 { font-size: 1.2em; margin: 0; }
+    </style>
+  </head>
+  <body>
+    <h1>{{ title }}</h1>
+    <div class="meta">
+      <div>Set: {{ set }} | #{{ number }} | Condition: {{ condition }} | Language: {{ language }}</div>
+      <div>SKU: {{ sku }}</div>
+    </div>
+
+    <div class="section">
+      {% if marketplace == 'ebay.fr' %}
+        <p>Carte du jeu The Lord of the Rings TCG. Article authentique, soigneusement inspecté et emballé avec protection.</p>
+      {% else %}
+        <p>Authentic The Lord of the Rings TCG card. Carefully inspected and shipped with protective packaging.</p>
+      {% endif %}
+    </div>
+
+    <div class="section">
+      {% if marketplace == 'ebay.fr' %}
+        <strong>Expédition</strong>: envoi rapide et soigné depuis le Canada (CAD). Regroupement des achats disponible.
+      {% else %}
+        <strong>Shipping</strong>: fast and secure shipping from Canada (CAD). Combined shipping available.
+      {% endif %}
+    </div>
+  </body>
+</html>
