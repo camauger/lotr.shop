@@ -1,101 +1,139 @@
-# LOTR TCG Shop – Setup & Run Guide
+# LOTR TCG Shop — Pipeline d'inventaire
 
-## Prérequis
-- Python 3.10+
-- pip
-- Compte Cloudinary (optionnel, pour CDN)
-- Identifiants eBay (optionnel, pour Picture Services)
+Automatise la création des listings eBay pour une collection LOTR TCG.
+
+## Documentation
+
+- **Guides et référence** : le dossier [docs/](docs/) contient la documentation (guide pas à pas, architecture, configuration, référence des scripts). Tu peux la lire en Markdown ou générer un site avec MkDocs :
+  ```bash
+  pip install -r requirements-docs.txt
+  mkdocs serve
+  ```
+  Puis ouvrir http://127.0.0.1:8000
+- **AGENTS.md** : contexte pour les assistants IA. **ROADMAP.md** : objectifs et étapes du projet.
+
+## Structure du projet
+
+```
+lotr-shop/
+├── config/
+│   └── settings.yaml          ← configuration centrale
+├── data/
+│   ├── master_cards.csv        ← base de données des cartes (générée)
+│   ├── my_cards.xlsx           ← TON inventaire (Excel, recommandé)
+│   ├── my_cards.csv            ← ou en CSV si tu préfères
+│   └── inventory.csv           ← inventaire complet (généré)
+├── input_raw/                  ← photos brutes (recto/verso par SKU)
+├── processed/                  ← images traitées
+├── upload/                     ← images prêtes pour eBay
+├── build_master_db.py          ← scraper wiki → master_cards.csv
+├── generate_inventory.py       ← my_cards + master → inventory.csv
+└── process_images.py           ← traitement photo (crop + resize)
+```
 
 ## Installation
+
 ```bash
-# Dans le dossier du projet
-python -m venv .venv
-# Git Bash (votre shell actuel)
-source .venv/Scripts/activate
-pip install -U pip setuptools wheel
-pip install -r requirements.txt
+pip install requests beautifulsoup4 pillow pyyaml
 ```
 
-- PowerShell (si vous basculez sur PS et voyez une erreur de scripts bloqués):
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\.venv\Scripts\Activate.ps1
-```
-- cmd.exe (Invite de commandes):
-```bat
-.venv\Scripts\activate.bat
+## Étape 1 — Construire la base de données
+
+À faire **une seule fois** (ou pour mise à jour) :
+
+```bash
+python build_master_db.py
 ```
 
-## Configuration
-Éditez `config/settings.yaml`:
-- `currency: CAD`
-- Marketplaces: `ebay.com` (par défaut), `ebay.ca`, `ebay.fr`
-- Règles de langue: `ebay.fr` → fr, autres → en
-- Images: `output_size_px: 1600`, `jpeg_quality: 90`
-- Cloudinary: renseigner `cloud_name`, `api_key`, `api_secret` si utilisé
-- eBay API: `environment`, `app_id`, `cert_id`, `dev_id`, `auth_token` si utilisé
+Scrape ~3600 cartes depuis wiki.lotrtcgpc.net (~45 min avec le délai poli).
+Résultat : `data/master_cards.csv`
 
-## Structure des fichiers
-- `input_raw/` photos brutes (recto/verso)
-- `processed/` sorties normalisées + `manifest.json`
-- `templates/description.html` modèle Jinja2
-- `inventory.csv` inventaire source (en CAD)
+La commande est **resumable** : si elle est interrompue, relance-la,
+elle reprend où elle s'est arrêtée.
 
-## Convention de nommage images (SKU)
-Format SKU: `LOTR-<SET>-<NUM>-<QUAL>` + suffixes fichiers
-- Recto: `<SKU>_recto.jpg`
-- Verso: `<SKU>_verso.jpg`
-Exemple: `input_raw/LOTR-FOTR-123-NM-01_recto.jpg`
+## Étape 2 — Saisir ton inventaire
 
-## Préparer l’inventaire
-`inventory.csv` (en-têtes):
-```
-SKU,Title,Set,Number,Condition,Language,Price
-```
-Exemple:
-```
-LOTR-FOTR-123-NM-01,"Gandalf, The Grey",FOTR,123,NM,EN,9.99
+Tu peux utiliser **Excel** (plus pratique) ou CSV.
+
+- **Excel :** crée ou édite `data/my_cards.xlsx` avec une feuille dont les en-têtes de colonnes sont exactement : `Set`, `CardID`, `Condition`, `Language`, `Foil`, `Price`, `Quantity`.
+- **CSV :** édite `data/my_cards.csv`. Si `my_cards.xlsx` existe, il est utilisé en priorité.
+
+Exemple (même structure en Excel ou CSV) :
+
+```csv
+Set,CardID,Condition,Language,Foil,Price,Quantity
+2,2R1,NM,EN,N,2.50,1
+1,1R1,LP,EN,N,1.00,2
 ```
 
-## 1) Traitement des images
+| Colonne    | Valeurs acceptées                  | Exemple |
+|------------|------------------------------------|---------|
+| CardID     | SetRarityNum (ex. 2R1, 1C15)       | 2R1     |
+| Condition  | NM / LP / MP / HP / D              | NM      |
+| Language   | EN / FR / DE / IT / ES / PL        | EN      |
+| Foil       | Y / N                              | N       |
+| Price      | Nombre décimal en CAD              | 2.50    |
+| Quantity   | Entier (crée N lignes dans l'inv.) | 1       |
+
+Le champ `Set` est ignoré (CardID contient déjà le set).
+Il est conservé pour faciliter la saisie visuelle.
+
+## Étape 3 — Générer l'inventaire complet
+
+```bash
+python generate_inventory.py
+```
+
+Produit `data/inventory.csv` avec tous les champs enrichis + SKU générés (dont **Foil/Regular** : Foil ou Regular selon la carte).
+
+**Format SKU :** `LOTR-<Set>-<CardID>-<Foil>-<Cond>[-<Lang>]-<idx>`
+Exemple : `LOTR-02-2R1-NF-NM-01`
+
+## Étape 4 — Photos
+
+Nomme tes fichiers photo d'après le SKU :
+```
+input_raw/LOTR-02-2R1-NF-NM-01_recto.jpg
+input_raw/LOTR-02-2R1-NF-NM-01_verso.jpg
+```
+
 ```bash
 python process_images.py
 ```
-- Lit `input_raw/`
-- Écrit images normalisées dans `processed/` + `manifest.json`
 
-## 2) Upload des images (au choix)
-- CDN Cloudinary:
-```bash
-python upload_cdn.py
-```
-  - Produit `processed/image_urls.json`
-- eBay Picture Services (sandbox/production selon config):
-```bash
-python upload_ebay.py
-```
-  - Produit `processed/image_urls_ebay.json`
+## Étape 5 — Texte des listings et CSV eBay
 
-## 3) Génération des listings eBay (CSV)
+Le script **génère le texte de description** de chaque annonce (HTML) à partir du template `templates/description.html`, puis produit un CSV par marketplace prêt pour l’import eBay.
+
+**Optionnel :** si tu as uploadé les images (Cloudinary ou eBay Picture Services), les URLs sont ajoutées aux listings. Sinon, les colonnes image restent vides et tu pourras les remplir côté eBay.
+
 ```bash
 python build_listings.py
 ```
-- Génère un CSV par marketplace: `listings_ebay_ebay_com.csv`, `listings_ebay_ebay_ca.csv`, `listings_ebay_ebay_fr.csv`
-- Le CSV inclut les colonnes d’images `PictureURL1` (recto) et `PictureURL2` (verso) si `processed/image_urls.json` ou `processed/image_urls_ebay.json` existe.
-- Règles:
-  - eBay.fr → description en français
-  - eBay.com / eBay.ca → description en anglais
-  - Prix identiques en CAD sur tous les sites
 
-## 4) Publication (voie rapide)
-- Importez le CSV dans eBay Seller Hub (Bulk upload)
+Résultat : `listings_ebay_ebay_com.csv`, `listings_ebay_ebay_ca.csv`, `listings_ebay_ebay_fr.csv` (titre, prix, **description HTML**, images si disponibles).  
+Tu peux modifier `templates/description.html` pour adapter le texte (Set, CardID, Foil/Regular, condition, langue, expédition, etc.).
 
-## Notes & astuces
-- OpenCV: si problème d’installation Windows, réessayez avec `pip install --upgrade pip setuptools wheel`
-- Cloudinary: nécessite des credentials valides, sinon l’upload échoue
-- eBay SDK: privilégiez sandbox pour tests, puis passez en production
+## Identifiants de Set (référence rapide)
 
-## Prochaines étapes
-- Améliorer le cadrage (contours, homographie)
-- Intégrer les URLs images dans le CSV eBay si nécessaire (déjà pris en charge)
-- Ajouter relistage automatique via API eBay
+| SetNum | Nom                     | Abrév. |
+|--------|-------------------------|--------|
+| 1      | The Fellowship of the Ring | FOTR |
+| 2      | Mines of Moria          | MOM    |
+| 3      | Realms of the Elf-Lords | ROEL   |
+| 4      | The Two Towers          | TTT    |
+| 5      | Battle of Helm's Deep   | BOHD   |
+| 6      | Ents of Fangorn         | EOF    |
+| 7      | The Return of the King  | ROTK   |
+| 8      | Siege of Gondor         | SOG    |
+| 9      | Reflections             | REF    |
+| 10     | Mount Doom              | MD     |
+| 11     | Shadows                 | SHA    |
+| 12     | Black Rider             | BR     |
+| 13     | Bloodlines              | BL     |
+| 14     | Expanded Middle-earth   | EME    |
+| 15     | The Hunters             | HUN    |
+| 16     | The Wraith Collection   | WC     |
+| 17     | Rise of Saruman         | ROS    |
+| 18     | Treachery & Deceit      | TD     |
+| 19     | Ages' End               | AE     |

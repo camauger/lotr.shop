@@ -1,23 +1,25 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import cast
 
 import yaml
 
 try:
     from ebaysdk.trading import Connection as Trading
 except Exception:  # pragma: no cover
-    Trading = None  # type: ignore
+    Trading = None
 
 
-def load_settings(path: str = "config/settings.yaml") -> Dict:
-    with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+def load_settings(path: str = "config/settings.yaml") -> dict:
+    """Load YAML settings from config file."""
+    with open(path, encoding="utf-8") as f:
+        return cast(dict, yaml.safe_load(f))
 
 
 def upload_picture_service(
-    settings: Dict, processed_dir: str = "processed"
-) -> Dict[str, Dict[str, str]]:
+    settings: dict, processed_dir: str = "processed"
+) -> dict[str, dict[str, str]]:
+    """Upload processed images via eBay Trading API; return SKU -> {recto, verso} URLs."""
     if Trading is None:
         raise RuntimeError("ebaysdk not installed or import failed")
 
@@ -35,7 +37,7 @@ def upload_picture_service(
         ),
     )
 
-    mapping: Dict[str, Dict[str, str]] = {}
+    mapping: dict[str, dict[str, str]] = {}
 
     for recto_file in Path(processed_dir).glob("*_recto.jpg"):
         sku = recto_file.name.replace("_recto.jpg", "")

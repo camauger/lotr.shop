@@ -1,20 +1,20 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import cast
 
 import cloudinary
 import cloudinary.uploader
 import yaml
 
 
-def load_settings(path: str = "config/settings.yaml") -> Dict:
-    import typing as t
+def load_settings(path: str = "config/settings.yaml") -> dict:
+    """Load YAML settings from config file."""
+    with open(path, encoding="utf-8") as f:
+        return cast(dict, yaml.safe_load(f))
 
-    with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)  # type: ignore[return-value]
 
-
-def configure_cloudinary(settings: Dict) -> None:
+def configure_cloudinary(settings: dict) -> None:
+    """Set Cloudinary config from settings (cloud_name, api_key, api_secret)."""
     creds = settings.get("cloudinary", {})
     cloudinary.config(
         cloud_name=creds.get("cloud_name", ""),
@@ -24,8 +24,9 @@ def configure_cloudinary(settings: Dict) -> None:
     )
 
 
-def upload_processed(processed_dir: str = "processed") -> Dict[str, Dict[str, str]]:
-    mapping: Dict[str, Dict[str, str]] = {}
+def upload_processed(processed_dir: str = "processed") -> dict[str, dict[str, str]]:
+    """Upload processed recto/verso images to Cloudinary; return SKU -> {recto, verso} URLs."""
+    mapping: dict[str, dict[str, str]] = {}
     for recto_file in Path(processed_dir).glob("*_recto.jpg"):
         sku = recto_file.name.replace("_recto.jpg", "")
         verso_file = recto_file.with_name(f"{sku}_verso.jpg")

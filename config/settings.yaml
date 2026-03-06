@@ -1,4 +1,4 @@
-# Global settings for LOTR TCG shop automation
+# MVP – LOTR TCG shop (traitement images + génération CSV eBay)
 
 currency: CAD
 
@@ -14,6 +14,7 @@ marketplaces:
   pricing:
     identical_across_sites: true
 
+# Coordonnées de crop, taille cible, qualité (MVP)
 images:
   output_size_px: 1600
   jpeg_quality: 90
@@ -21,6 +22,12 @@ images:
   background: white
   recto_suffix: "_recto.jpg"
   verso_suffix: "_verso.jpg"
+  # Zone de crop en pixels (optionnel). Si width/height = 0, pas de crop.
+  crop:
+    left: 0
+    top: 0
+    width: 0
+    height: 0
 
 sku:
   pattern: "LOTR-<SET>-<NUM>-<QUAL>"
@@ -38,7 +45,7 @@ sku:
 paths:
   input_raw: "input_raw"
   processed: "processed"
-  upload: "upload"
+  data: "data"
   templates: "templates"
 
 cloudinary:

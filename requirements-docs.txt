@@ -1,0 +1,4 @@
+# Optionnel : pour générer la documentation (mkdocs serve / mkdocs build)
+# Utiliser mkdocs<2 pour compatibilité avec Material (MkDocs 2.0 supprime les plugins).
+mkdocs<2
+mkdocs-material>=9.5

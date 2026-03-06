@@ -1,37 +1,402 @@
 <!doctype html>
 <html lang="{{ 'fr' if marketplace == 'ebay.fr' else 'en' }}">
-  <head>
-    <meta charset="utf-8">
-    <title>{{ title }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-      body { font-family: Arial, sans-serif; color: #222; line-height: 1.5; }
-      .meta { font-size: 0.95em; color: #555; }
-      .section { margin-top: 12px; }
-      h1 { font-size: 1.2em; margin: 0; }
-    </style>
-  </head>
-  <body>
-    <h1>{{ title }}</h1>
-    <div class="meta">
-      <div>Set: {{ set }} | #{{ number }} | Condition: {{ condition }} | Language: {{ language }}</div>
-      <div>SKU: {{ sku }}</div>
-    </div>
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap');
 
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:        #1c1208;
+      --parchment:  #f5ecd7;
+      --gold:       #b8882a;
+      --gold-light: #d4a84b;
+      --gold-dim:   #7a5c1e;
+      --shadow:     rgba(28,18,8,0.18);
+      --rule:       #c9a84c;
+    }
+
+    body {
+      background: var(--parchment);
+      color: var(--ink);
+      font-family: 'Crimson Pro', 'Georgia', serif;
+      font-size: 17px;
+      line-height: 1.65;
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 0 0 40px;
+    }
+
+    /* ── HEADER BAND ────────────────────────────────────────────── */
+    .header-band {
+      background: var(--ink);
+      padding: 28px 36px 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-band::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 80% at 90% 50%, rgba(184,136,42,.12) 0%, transparent 70%),
+        repeating-linear-gradient(
+          135deg,
+          transparent 0px,
+          transparent 28px,
+          rgba(184,136,42,.04) 28px,
+          rgba(184,136,42,.04) 29px
+        );
+    }
+
+    .eyecatcher {
+      font-family: 'Cinzel', 'Palatino Linotype', serif;
+      font-size: 0.68em;
+      font-weight: 600;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: .85;
+      margin-bottom: 6px;
+      position: relative;
+    }
+
+    .card-title {
+      font-family: 'Cinzel', 'Palatino Linotype', serif;
+      font-size: 1.65em;
+      font-weight: 700;
+      color: #f0e0b0;
+      line-height: 1.2;
+      position: relative;
+    }
+
+    .card-title span.sub {
+      display: block;
+      font-size: 0.55em;
+      font-weight: 400;
+      letter-spacing: .06em;
+      color: var(--gold);
+      margin-top: 3px;
+    }
+
+    /* ── GOLD RULE ──────────────────────────────────────────────── */
+    .rule {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 36px;
+      padding: 0;
+    }
+    .rule::before, .rule::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--rule), transparent);
+    }
+    .rule-diamond {
+      width: 7px;
+      height: 7px;
+      background: var(--gold);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    /* ── CARD ATTRIBUTES ────────────────────────────────────────── */
+    .attributes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0;
+      border: 1px solid #d8c9a8;
+      border-top: 3px solid var(--gold);
+      margin: 0 36px;
+      background: #fffdf6;
+    }
+
+    .attr {
+      padding: 10px 14px;
+      border-right: 1px solid #e4d9c2;
+      border-bottom: 1px solid #e4d9c2;
+    }
+    .attr:last-child { border-right: none; }
+
+    .attr-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.58em;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .attr-value {
+      font-size: 0.95em;
+      font-weight: 400;
+      color: var(--ink);
+    }
+
+    .attr-value.condition-nm   { color: #2a6e2a; font-weight: 600; }
+    .attr-value.condition-lp   { color: #4a7c2a; font-weight: 600; }
+    .attr-value.condition-mp   { color: #7a6020; font-weight: 600; }
+    .attr-value.condition-hp   { color: #8a3a20; }
+    .attr-value.condition-d    { color: #7a2020; }
+    .attr-value.foil           { color: #7c5c00; font-style: italic; }
+
+    /* ── BODY SECTIONS ──────────────────────────────────────────── */
+    .body-wrap {
+      padding: 22px 36px 0;
+    }
+
+    .section {
+      margin-top: 20px;
+    }
+
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72em;
+      font-weight: 600;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      border-bottom: 1px solid #d8c9a8;
+      padding-bottom: 4px;
+      margin-bottom: 10px;
+    }
+
+    .section p {
+      font-size: 0.97em;
+      color: #3a2c18;
+    }
+
+    /* ── GAME TEXT BOX ──────────────────────────────────────────── */
+    .game-text-box {
+      background: #fdf8ee;
+      border-left: 3px solid var(--gold);
+      padding: 12px 16px;
+      margin-top: 10px;
+      font-style: italic;
+      font-size: 0.93em;
+      color: #4a3820;
+      line-height: 1.55;
+    }
+
+    .lore-text {
+      margin-top: 8px;
+      font-size: 0.85em;
+      color: var(--gold-dim);
+      font-style: italic;
+      text-align: right;
+      padding-right: 4px;
+    }
+
+    /* ── SHIPPING / POLICY ──────────────────────────────────────── */
+    .policy-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .policy-item {
+      background: #fdf8ee;
+      border: 1px solid #e4d9c2;
+      padding: 10px 14px;
+      font-size: 0.9em;
+    }
+
+    .policy-item strong {
+      display: block;
+      font-family: 'Cinzel', serif;
+      font-size: 0.75em;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 3px;
+    }
+
+    /* ── FOOTER ─────────────────────────────────────────────────── */
+    .footer {
+      margin: 28px 36px 0;
+      padding-top: 14px;
+      border-top: 1px solid #d8c9a8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .footer-brand {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7em;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+    }
+
+    .footer-sku {
+      font-size: 0.78em;
+      color: #9a8a6a;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────────── */
+    @media (max-width: 500px) {
+      .header-band, .rule, .body-wrap, .footer { padding-left: 18px; padding-right: 18px; }
+      .rule { margin: 0 18px; }
+      .attributes { margin: 0 18px; }
+      .footer { margin: 22px 18px 0; }
+      .policy-grid { grid-template-columns: 1fr; }
+      .attributes { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── HEADER ──────────────────────────────────────────────────── -->
+  <div class="header-band">
+    <div class="eyecatcher">The Lord of the Rings TCG &nbsp;·&nbsp; Decipher</div>
+    <div class="card-title">
+      {{ title }}
+      <span class="sub">{{ set_name }} &nbsp;·&nbsp; {{ card_type }}{% if culture %} &nbsp;·&nbsp; {{ culture }}{% endif %}</span>
+    </div>
+  </div>
+
+  <div class="rule"><div class="rule-diamond"></div></div>
+
+  <!-- ── ATTRIBUTES GRID ─────────────────────────────────────────── -->
+  <div class="attributes">
+    <div class="attr">
+      <span class="attr-label">{% if marketplace == 'ebay.fr' %}Extension{% else %}Set{% endif %}</span>
+      <span class="attr-value">{{ set }}</span>
+    </div>
+    <div class="attr">
+      <span class="attr-label">#</span>
+      <span class="attr-value">{{ number }}</span>
+    </div>
+    <div class="attr">
+      <span class="attr-label">{% if marketplace == 'ebay.fr' %}Rareté{% else %}Rarity{% endif %}</span>
+      <span class="attr-value">{{ rarity }}</span>
+    </div>
+    <div class="attr">
+      <span class="attr-label">{% if marketplace == 'ebay.fr' %}État{% else %}Condition{% endif %}</span>
+      <span class="attr-value condition-{{ condition | lower }}">{{ condition }}</span>
+    </div>
+    <div class="attr">
+      <span class="attr-label">{% if marketplace == 'ebay.fr' %}Langue{% else %}Language{% endif %}</span>
+      <span class="attr-value">{{ language }}</span>
+    </div>
+    <div class="attr">
+      <span class="attr-label">Foil</span>
+      <span class="attr-value{% if foil_y %} foil{% endif %}">
+        {% if marketplace == 'ebay.fr' %}
+          {{ '✦ Foil' if foil_y else 'Non-foil' }}
+        {% else %}
+          {{ '✦ Foil' if foil_y else 'Non-foil' }}
+        {% endif %}
+      </span>
+    </div>
+    {% if twilight %}
+    <div class="attr">
+      <span class="attr-label">Twilight</span>
+      <span class="attr-value">{{ twilight }}</span>
+    </div>
+    {% endif %}
+    {% if kind %}
+    <div class="attr">
+      <span class="attr-label">Side</span>
+      <span class="attr-value">{{ kind }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── BODY ────────────────────────────────────────────────────── -->
+  <div class="body-wrap">
+
+    {% if game_text %}
     <div class="section">
+      <div class="section-title">{% if marketplace == 'ebay.fr' %}Texte de jeu{% else %}Game Text{% endif %}</div>
+      <div class="game-text-box">
+        {{ game_text | safe }}
+        {% if lore %}
+        <div class="lore-text">{{ lore }}</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Description -->
+    <div class="section">
+      <div class="section-title">{% if marketplace == 'ebay.fr' %}Description{% else %}About This Card{% endif %}</div>
       {% if marketplace == 'ebay.fr' %}
-        <p>Carte du jeu The Lord of the Rings TCG. Article authentique, soigneusement inspecté et emballé avec protection.</p>
+        <p>Carte authentique du jeu <strong>The Lord of the Rings TCG</strong> (Decipher). Chaque carte est soigneusement inspectée selon les standards PSA/BGS avant expédition et protégée dans un toploader rigide à l'intérieur d'une enveloppe cartonnée.</p>
       {% else %}
-        <p>Authentic The Lord of the Rings TCG card. Carefully inspected and shipped with protective packaging.</p>
+        <p>Authentic <strong>The Lord of the Rings Trading Card Game</strong> card by Decipher. Every card is carefully graded against standard PSA/BGS criteria before listing. Shipped in a penny sleeve inside a rigid toploader, then bubble-wrapped in a stiff mailer — your card arrives the way it left.</p>
       {% endif %}
     </div>
 
+    <!-- Condition guide -->
     <div class="section">
+      <div class="section-title">{% if marketplace == 'ebay.fr' %}Barème d'état{% else %}Condition Guide{% endif %}</div>
       {% if marketplace == 'ebay.fr' %}
-        <strong>Expédition</strong>: envoi rapide et soigné depuis le Canada (CAD). Regroupement des achats disponible.
+        <p><strong>NM</strong> (Near Mint) — quasi parfait, aucune usure visible · <strong>LP</strong> (Light Play) — légères marques aux bords, face avant sans défaut · <strong>MP</strong> (Moderate Play) — usure visible mais entièrement jouable · <strong>HP</strong> — usure importante</p>
       {% else %}
-        <strong>Shipping</strong>: fast and secure shipping from Canada (CAD). Combined shipping available.
+        <p><strong>NM</strong> (Near Mint) — virtually perfect, no visible wear · <strong>LP</strong> (Light Play) — minor edge/corner wear, clean face · <strong>MP</strong> (Moderate Play) — noticeable wear, still fully playable · <strong>HP</strong> — heavy wear, clearly noted</p>
       {% endif %}
     </div>
-  </body>
+
+    <!-- Shipping & policies -->
+    <div class="section">
+      <div class="section-title">{% if marketplace == 'ebay.fr' %}Expédition &amp; Politique{% else %}Shipping &amp; Policy{% endif %}</div>
+      <div class="policy-grid">
+        <div class="policy-item">
+          <strong>{% if marketplace == 'ebay.fr' %}Expédition{% else %}Shipping{% endif %}</strong>
+          {% if marketplace == 'ebay.fr' %}
+            Envoi depuis le Canada. Délai habituel 7–14 jours ouvrés vers la France. Suivi disponible.
+          {% else %}
+            Shipped from Canada (CAD pricing). Typical delivery: 5–10 business days domestically, 10–21 days international.
+          {% endif %}
+        </div>
+        <div class="policy-item">
+          <strong>{% if marketplace == 'ebay.fr' %}Commandes groupées{% else %}Combined Shipping{% endif %}</strong>
+          {% if marketplace == 'ebay.fr' %}
+            Regroupement des achats possible — demandez une facture avant paiement.
+          {% else %}
+            Buying multiple cards? Request an invoice before paying to combine shipping and save.
+          {% endif %}
+        </div>
+        <div class="policy-item">
+          <strong>{% if marketplace == 'ebay.fr' %}Retours{% else %}Returns{% endif %}</strong>
+          {% if marketplace == 'ebay.fr' %}
+            Retours acceptés sous 30 jours si la carte ne correspond pas à la description.
+          {% else %}
+            Returns accepted within 30 days if the card does not match its listed condition.
+          {% endif %}
+        </div>
+        <div class="policy-item">
+          <strong>{% if marketplace == 'ebay.fr' %}Questions{% else %}Questions{% endif %}</strong>
+          {% if marketplace == 'ebay.fr' %}
+            N'hésitez pas à poser vos questions — des photos supplémentaires sont disponibles sur demande.
+          {% else %}
+            Feel free to ask — additional photos of any card are available on request.
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /body-wrap -->
+
+  <!-- ── FOOTER ──────────────────────────────────────────────────── -->
+  <div class="footer">
+    <div class="footer-brand">LOTR TCG Collection &nbsp;·&nbsp; Canada</div>
+    <div class="footer-sku">SKU {{ sku }}</div>
+  </div>
+
+</body>
 </html>

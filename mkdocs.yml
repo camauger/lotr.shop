@@ -1,0 +1,38 @@
+# LOTR TCG Shop — Documentation
+# Générer le site : mkdocs build
+# Prévisualiser : mkdocs serve
+
+site_name: LOTR TCG Shop
+site_description: Pipeline d'inventaire et listings eBay pour la collection LOTR TCG
+site_url: ""
+
+theme:
+  name: material
+  language: fr
+  palette:
+    - scheme: default
+      primary: amber
+      accent: brown
+    - scheme: slate
+      primary: amber
+      accent: brown
+  features:
+    - navigation.tabs
+    - content.code.copy
+    - search.suggest
+
+plugins:
+  - search:
+      lang: fr
+
+markdown_extensions:
+  - admonition
+  - tables
+  - pymdownx.superfences
+
+nav:
+  - Accueil: index.md
+  - Guide: guide.md
+  - Architecture: architecture.md
+  - Configuration: configuration.md
+  - Scripts: scripts.md

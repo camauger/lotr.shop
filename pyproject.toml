@@ -1,0 +1,32 @@
+[project]
+name = "lotrtcg-shop"
+version = "0.1.0"
+description = "Pipeline inventaire et listings eBay pour collection LOTR TCG"
+readme = "README.md"
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+dev = ["ruff>=0.4", "mypy>=1.8"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+exclude = [".venv", "site", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["F", "E", "W", "I", "N", "UP", "B", "C4", "SIM"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = ["cloudinary", "cloudinary.uploader", "ebaysdk.trading"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["cv2", "numpy", "pandas", "requests"]
+ignore_missing_imports = true

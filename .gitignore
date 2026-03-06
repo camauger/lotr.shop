@@ -42,6 +42,9 @@ upload/*
 # Generated CSVs
 listings_ebay_*.csv
 
+# MkDocs build output
+site/
+
 # Generated manifests / URL maps
 processed/manifest.json
 processed/image_urls.json

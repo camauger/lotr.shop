@@ -1,0 +1,41 @@
+# config/settings.yaml
+# Configuration centrale du projet LOTR TCG Shop
+
+scraper:
+  base_url: "https://wiki.lotrtcgpc.net"
+  delay_seconds: 0.8         # délai entre requêtes (respecte le serveur)
+  user_agent: "LOTRTCGShopBot/1.0"
+
+images:
+  input_dir: "input_raw"
+  processed_dir: "processed"
+  upload_dir: "upload"
+  target_width: 1600         # px, côté long
+  jpeg_quality: 90
+  color_profile: "sRGB"
+  # Coordonnées de crop (à calibrer avec une photo test)
+  # Format : [x, y, width, height] en pixels depuis le coin haut-gauche
+  # crop_box: [120, 80, 1360, 1900]  # ex. à remplir après calibration
+
+inventory:
+  currency: "CAD"
+  default_language: "EN"
+  default_condition: "NM"
+
+ebay:
+  marketplaces:
+    - site: "eBay.com"
+      language: "EN"
+      currency: "CAD"
+    - site: "eBay.ca"
+      language: "EN"
+      currency: "CAD"
+    - site: "eBay.fr"
+      language: "FR"
+      currency: "CAD"
+
+paths:
+  master_db:  "data/master_cards.csv"
+  my_cards:   "data/my_cards.csv"
+  inventory:  "data/inventory.csv"
+  listings:   "data/listings_ebay.csv"
