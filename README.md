@@ -26,16 +26,29 @@ lotr-shop/
 ├── input_raw/                  ← photos brutes (recto/verso par SKU)
 ├── processed/                  ← images traitées
 ├── upload/                     ← images prêtes pour eBay
+├── static/                     ← placeholder recto/verso (générés, voir ci‑dessous)
+├── web/
+│   └── app.py                  ← site MVP (Streamlit) — inventaire + filtres
 ├── build_master_db.py          ← scraper wiki → master_cards.csv
 ├── generate_inventory.py       ← my_cards + master → inventory.csv
+├── generate_placeholders.py    ← génère static/placeholder_recto.jpg et _verso.jpg
 └── process_images.py           ← traitement photo (crop + resize)
 ```
 
 ## Installation
 
 ```bash
-pip install requests beautifulsoup4 pillow pyyaml
+pip install -r requirements.txt
 ```
+
+Pour lancer uniquement le **site web MVP** (inventaire + filtres) :
+
+```bash
+pip install -r requirements.txt
+streamlit run web/app.py
+```
+
+Ouvre http://localhost:8501 — l’app lit `data/inventory.csv` (génère-le avant avec `python generate_inventory.py`). Filtres : recherche (SKU/titre), set, condition, foil/regular, langue, prix. La **vue cartes** affiche l’image de chaque carte si elle existe dans `processed/`, sinon une image placeholder. Pour générer les placeholders (une fois) : `python generate_placeholders.py` → crée `static/placeholder_recto.jpg` et `placeholder_verso.jpg`. Prochaine étape prévue : synchro eBay (annonces, ventes, relistage).
 
 ## Étape 1 — Construire la base de données
 
@@ -113,6 +126,16 @@ python build_listings.py
 
 Résultat : `listings_ebay_ebay_com.csv`, `listings_ebay_ebay_ca.csv`, `listings_ebay_ebay_fr.csv` (titre, prix, **description HTML**, images si disponibles).  
 Tu peux modifier `templates/description.html` pour adapter le texte (Set, CardID, Foil/Regular, condition, langue, expédition, etc.).
+
+## Site web (MVP)
+
+Un petit site Streamlit affiche l’inventaire avec recherche et filtres. À lancer **depuis la racine du projet** :
+
+```bash
+streamlit run web/app.py
+```
+
+Ouvre http://localhost:8501. L’app utilise `config/settings.yaml` pour le chemin des données (`paths.data`) et lit `data/inventory.csv`. Filtres : recherche (SKU, titre), set, condition, foil/regular, langue, fourchette de prix. Structure prête pour brancher plus tard la synchro eBay.
 
 ## Identifiants de Set (référence rapide)
 

@@ -27,6 +27,8 @@ lotrtcg.shop/
 ├── upload_cdn.py              # (optionnel) Upload Cloudinary → image_urls.json
 ├── upload_ebay.py             # (optionnel) Upload eBay Picture Services → image_urls_ebay.json
 ├── build_listings.py          # (optionnel) inventory + template + URLs → listings_ebay_<site>.csv
+├── web/
+│   └── app.py                 # MVP site Streamlit — inventaire, recherche, filtres (préparation synchro eBay)
 ├── README.md
 └── ROADMAP.md
 ```
@@ -64,6 +66,7 @@ lotrtcg.shop/
 | `upload_ebay.py` | (Listing eBay) Uploads via eBay Trading API → `processed/image_urls_ebay.json` |
 | `build_listings.py` | (Listing eBay) Renders Jinja2 descriptions, merges image URLs, outputs one CSV per marketplace |
 | `templates/description.html` | (Listing eBay) Description template (title, set, number, condition, language, sku, marketplace) |
+| `web/app.py` | MVP site Streamlit: reads `data/inventory.csv`, displays inventory with search and filters (set, condition, foil, language, price). Run: `streamlit run web/app.py` |
 
 ## Development
 

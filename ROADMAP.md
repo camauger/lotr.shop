@@ -111,7 +111,7 @@ Mettre en place un système automatisé pour :
 
 * [ ] **Pricing dynamique** : comparer avec API “Finding” eBay pour ajuster automatiquement prix.
 * [ ] **Analyse qualité** : détection de bordures abîmées, différenciation foil/non-foil.
-* [ ] **Dashboard** (Flask ou Streamlit) pour suivre inventaire et stats de ventes.
+* [x] **Dashboard MVP** (Streamlit) : `web/app.py` — affiche l’inventaire (`data/inventory.csv`) avec recherche et filtres (set, condition, foil, langue, prix). Lancer : `streamlit run web/app.py`. Structure prête pour brancher la synchro eBay plus tard.
 
 ---
 

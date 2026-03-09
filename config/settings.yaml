@@ -22,8 +22,11 @@ images:
   background: white
   recto_suffix: "_recto.jpg"
   verso_suffix: "_verso.jpg"
-  # Zone de crop en pixels (optionnel). Si width/height = 0, pas de crop.
+  # Zone de crop en pixels (optionnel). Utilisé par process_images et crop_upload_images.
+  # Si margin > 0 : enlève N pixels de chaque côté (gauche, haut, droite, bas).
+  # Sinon si width/height > 0 : rectangle (left, top, width, height).
   crop:
+    margin: 100
     left: 0
     top: 0
     width: 0

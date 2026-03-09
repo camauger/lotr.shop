@@ -94,7 +94,7 @@ def load_master(path: Path) -> dict:
     with open(path, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
             master[row["CardID"]] = row
-    print(f"✓ {len(master)} cartes dans master_cards.csv")
+    print(f"OK {len(master)} cartes dans master_cards.csv")
     return master
 
 
@@ -138,13 +138,13 @@ def load_my_cards() -> tuple[list[dict], str]:
 # Traitement principal
 # ---------------------------------------------------------------------------
 def generate(master: dict) -> list[dict]:
-    """Merge my_cards with master and produce full inventory rows with SKUs."""
-    rows = []
-    sku_counter: dict[str, int] = {}
+    """Merge my_cards with master; one row per (CardID, Condition, Language, Foil), Quantity in column."""
+    # Agrégat: (card_id, condition, language, foil) -> (quantity_sum, price, line_num for errors)
+    aggregated: dict[tuple[str, str, str, str], tuple[int, str, int]] = {}
     errors = 0
 
     my_entries, my_path = load_my_cards()
-    print(f"✓ {len(my_entries)} lignes lues depuis {my_path}")
+    print(f"OK {len(my_entries)} lignes lues depuis {my_path}")
 
     for line_num, entry in enumerate(my_entries, start=2):
         card_id_raw = entry.get("CardID", "").strip()
@@ -156,52 +156,54 @@ def generate(master: dict) -> list[dict]:
         qty_val = entry.get("Quantity", "1") or "1"
         quantity = int(float(qty_val)) if qty_val else 1
 
-        # Validation basique (recherche avec CardID normalisé, ex. 9R+49 → 9R49)
         if card_id not in master:
-            print(f"  ⚠ Ligne {line_num} : CardID '{card_id_raw}' inconnu dans master")
+            print(f"  WARN Ligne {line_num} : CardID '{card_id_raw}' inconnu dans master")
             errors += 1
             continue
         if condition not in CONDITION_VALID:
             print(
-                f"  ⚠ Ligne {line_num} : Condition '{condition}' invalide "
+                f"  WARN Ligne {line_num} : Condition '{condition}' invalide "
                 f"(valeurs : {CONDITION_VALID})"
             )
             errors += 1
             continue
 
+        key = (card_id, condition, language, foil.upper())
+        if key in aggregated:
+            prev_qty, prev_price, _ = aggregated[key]
+            aggregated[key] = (prev_qty + quantity, prev_price, line_num)
+        else:
+            aggregated[key] = (quantity, price, line_num)
+
+    rows = []
+    for (card_id, condition, language, foil_key), (total_qty, price, _) in aggregated.items():
         card = master[card_id]
+        foil = "Y" if foil_key == "Y" else "N"
+        # Un seul SKU par produit (idx=1)
+        sku = make_sku(card["SetNum"], card_id, foil, condition, language, idx=1)
+        rows.append(
+            {
+                "SKU": sku,
+                "Title": card["Title"],
+                "SetNum": card["SetNum"],
+                "SetName": card["SetName"],
+                "CardID": card_id,
+                "Rarity": card["Rarity"],
+                "Kind": card["Kind"],
+                "Culture": card["Culture"],
+                "Twilight": card["Twilight"],
+                "CardType": card["CardType"],
+                "GameText": card["GameText"],
+                "Condition": condition,
+                "Language": language,
+                "Foil": foil_key,
+                "Foil/Regular": "Foil" if is_foil(foil) else "Regular",
+                "Price": price,
+                "Quantity": total_qty,
+            }
+        )
 
-        # Un exemplaire par ligne ; Quantity > 1 → plusieurs lignes avec idx croissant
-        for _ in range(quantity):
-            sku_key = f"{card_id}-{foil}-{condition}-{language}"
-            sku_counter[sku_key] = sku_counter.get(sku_key, 0) + 1
-            idx = sku_counter[sku_key]
-
-            sku = make_sku(card["SetNum"], card_id, foil, condition, language, idx)
-
-            rows.append(
-                {
-                    "SKU": sku,
-                    "Title": card["Title"],
-                    "SetNum": card["SetNum"],
-                    "SetName": card["SetName"],
-                    "CardID": card_id,
-                    "Rarity": card["Rarity"],
-                    "Kind": card["Kind"],
-                    "Culture": card["Culture"],
-                    "Twilight": card["Twilight"],
-                    "CardType": card["CardType"],
-                    "GameText": card["GameText"],
-                    "Condition": condition,
-                    "Language": language,
-                    "Foil": foil.upper(),
-                    "Foil/Regular": "Foil" if is_foil(foil) else "Regular",
-                    "Price": price,
-                    "Quantity": 1,
-                }
-            )
-
-    print(f"✓ {len(rows)} entrées générées ({errors} erreurs)")
+    print(f"OK {len(rows)} entrées générées ({errors} erreurs)")
     return rows
 
 
@@ -219,7 +221,7 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"✓ inventory.csv → {OUTPUT}  ({len(rows)} lignes)")
+    print(f"OK inventory.csv -> {OUTPUT}  ({len(rows)} lignes)")
 
 
 if __name__ == "__main__":

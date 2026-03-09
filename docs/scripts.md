@@ -119,3 +119,37 @@ python build_listings.py
 ```
 
 Le template reçoit notamment : title, set, set_name, number, condition, language, rarity, kind, culture, twilight, card_type, game_text, foil, foil_y, sku. **Dépendances** : Jinja2, PyYAML.
+
+---
+
+## web/app.py (Streamlit — MVP site web)
+
+**Rôle** : Afficher l’inventaire dans un site web avec recherche et filtres. MVP technique en vue d’une future synchro eBay (annonces, ventes, relistage).
+
+**Entrée** :
+- `config/settings.yaml` (paths.data pour le dossier des données)
+- `data/inventory.csv` (généré par generate_inventory.py)
+
+**Usage** (depuis la racine du projet) :
+```bash
+streamlit run web/app.py
+```
+
+Ouvre http://localhost:8501. Filtres : recherche (SKU, titre), set, condition, foil/regular, langue, fourchette de prix. **Vue cartes** : grille d’images (recto réel si présent dans `processed/`, sinon placeholder). Générer les placeholders avec `python generate_placeholders.py` pour afficher les cartes sans photo. **Dépendances** : `streamlit`, `polars`, PyYAML.
+
+---
+
+## generate_placeholders.py
+
+**Rôle** : Générer les images placeholder (recto et verso) pour les cartes sans photo. Utilisées par le site web MVP et réutilisables ailleurs (ex. listings sans image).
+
+**Entrée** : `config/settings.yaml` (images.output_size_px pour la taille).
+
+**Sortie** : `static/placeholder_recto.jpg`, `static/placeholder_verso.jpg` (format carte TCG, couleurs LOTR).
+
+**Usage** :
+```bash
+python generate_placeholders.py
+```
+
+À lancer une fois (ou après changement de `output_size_px`). **Dépendances** : Pillow, PyYAML.
