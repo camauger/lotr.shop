@@ -124,8 +124,27 @@ Le script **génère le texte de description** de chaque annonce (HTML) à parti
 python build_listings.py
 ```
 
-Résultat : `listings_ebay_ebay_com.csv`, `listings_ebay_ebay_ca.csv`, `listings_ebay_ebay_fr.csv` (titre, prix, **description HTML**, images si disponibles).  
+Résultat :
+- **CSV** : `listings_ebay_ebay_com.csv`, `listings_ebay_ebay_ca.csv`, `listings_ebay_ebay_fr.csv` (titre, prix, description HTML, images si disponibles).
+- **HTML** : un fichier par annonce dans `listings_html/<marketplace>/<SKU>.html` (ex. `listings_html/ebay_ca/LOTR-01-1R284-NF-NM-01.html`) pour prévisualiser chaque listing dans le navigateur.
+
 Tu peux modifier `templates/description.html` pour adapter le texte (Set, CardID, Foil/Regular, condition, langue, expédition, etc.).
+
+## Pousser les listings sur eBay
+
+eBay n’accepte pas un CSV libre : il faut utiliser **leur modèle** (Bulk upload) puis y copier tes données.
+
+1. **Seller Hub** → onglet **Rapports** (Reports) → **Téléversements** (Uploads) → **Obtenir un modèle** (Get template).
+2. Choisir **Créer de nouvelles annonces** (Create new listings) et la catégorie (ex. Cartes à collectionner > Jeu de cartes à collectionner > Le Seigneur des anneaux).
+3. Télécharger le fichier modèle (CSV ou Excel).
+4. **Remplir le modèle** : copier depuis tes `listings_ebay_*.csv` les colonnes **Title**, **Price**, **DescriptionHTML** (ou équivalent description), **PictureURL1** / **PictureURL2** (si tu as fait `upload_cdn.py` ou `upload_ebay.py`). Renseigner aussi les champs obligatoires eBay : condition, politique d’expédition, politique de retour, etc. (souvent via des **Business Policies** à configurer une fois dans ton compte).
+5. Enregistrer le fichier puis, sur la même page Téléversements, **Téléverser** le fichier rempli. eBay valide et crée les annonces.
+
+**Un site à la fois** : tu as un CSV par marketplace (`listings_ebay_ebay_com.csv`, `listings_ebay_ebay_ca.csv`, `listings_ebay_ebay_fr.csv`). Pour chaque site (ebay.com, ebay.ca, ebay.fr), utilise le modèle du site cible et le CSV correspondant.
+
+Voir aussi [docs/ebay-upload.md](docs/ebay-upload.md) pour le détail des colonnes et des liens eBay.
+
+**Publication via API (synchro)** : le script `publish_listings_ebay.py` crée les annonces directement sur eBay (API Trading AddItem). Prérequis : `build_listings.py`, images uploadées (`upload_ebay.py`), `config/settings.yaml` avec `ebay_api` et `ebay_api.listing.category_id` remplis. Commande : `python publish_listings_ebay.py [--marketplace ebay.ca]`. Les ItemID sont enregistrés dans `data/ebay_listing_ids.json` pour révision et relistage. Voir [docs/ebay-sync.md](docs/ebay-sync.md) (annonces, ventes, relistage).
 
 ## Site web (MVP)
 

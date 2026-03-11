@@ -100,10 +100,11 @@ Mettre en place un système automatisé pour :
 
 ## 6. Publication sur eBay
 
-* [ ] **Voie rapide** : Import CSV via *Seller Hub*.
-* [ ] **Voie avancée** : API eBay REST (`Sell Inventory` + `Sell Feed`) pour créer annonces.
-* [ ] Gestion du **relistage automatique** et suivi ventes.
-* [ ] Paramètres marketplace : devise CAD ; sites cibles eBay.com (par défaut), eBay.ca, eBay.fr.
+* [x] **Voie rapide** : Import CSV via *Seller Hub* (voir docs/ebay-upload.md).
+* [x] **Publication via API** : `publish_listings_ebay.py` crée les annonces avec l’API Trading (AddItem). Prérequis : build_listings.py, images (upload_ebay.py), config ebay_api + listing.category_id. Les ItemID sont enregistrés dans data/ebay_listing_ids.json (voir docs/ebay-sync.md).
+* [ ] **Ventes** : script pour récupérer les ventes (GetSellerTransactions / GetOrders) et mettre à jour l’inventaire ou un suivi ventes.
+* [ ] **Relistage** : script pour relancer les annonces terminées (EndItem + AddItem ou ReviseItem) en s’appuyant sur ebay_listing_ids.json.
+* [x] Paramètres marketplace : devise CAD ; sites cibles eBay.com, eBay.ca, eBay.fr.
 
 ---
 

@@ -63,7 +63,7 @@ Les images normalisées sont dans `processed/` et le mapping dans `processed/man
 python build_listings.py
 ```
 
-Résultat : `listings_ebay_ebay_com.csv`, `listings_ebay_ebay_ca.csv`, `listings_ebay_ebay_fr.csv`. Tu peux les importer dans eBay Seller Hub (Bulk upload). Pour personnaliser le texte, modifie `templates/description.html`.
+Résultat : `listings_ebay_ebay_com.csv`, `listings_ebay_ebay_ca.csv`, `listings_ebay_ebay_fr.csv`. Pour **pousser ces listings sur eBay**, utilise le téléversement en masse (Bulk upload) : Seller Hub → Rapports → Téléversements → Obtenir un modèle (Créer de nouvelles annonces), remplir le modèle avec les données de tes CSV, puis téléverser. Détail : [Pousser les listings sur eBay](ebay-upload.md). Pour personnaliser le texte, modifie `templates/description.html`.
 
 ## Référence rapide des sets
 

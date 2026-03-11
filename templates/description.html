@@ -2,7 +2,7 @@
 <html lang="{{ 'fr' if marketplace == 'ebay.fr' else 'en' }}">
 <head>
   <meta charset="utf-8">
-  <title>{{ title }}</title>
+  <title>LOTR TCG {{ title }} {{ number }} {{ condition }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap');
@@ -294,13 +294,7 @@
     </div>
     <div class="attr">
       <span class="attr-label">Foil</span>
-      <span class="attr-value{% if foil_y %} foil{% endif %}">
-        {% if marketplace == 'ebay.fr' %}
-          {{ '✦ Foil' if foil_y else 'Non-foil' }}
-        {% else %}
-          {{ '✦ Foil' if foil_y else 'Non-foil' }}
-        {% endif %}
-      </span>
+      <span class="attr-value{% if foil_y %} foil{% endif %}">{{ '✦ Foil' if foil_y else 'Non-foil' }}</span>
     </div>
     {% if twilight %}
     <div class="attr">
@@ -335,9 +329,9 @@
     <div class="section">
       <div class="section-title">{% if marketplace == 'ebay.fr' %}Description{% else %}About This Card{% endif %}</div>
       {% if marketplace == 'ebay.fr' %}
-        <p>Carte authentique du jeu <strong>The Lord of the Rings TCG</strong> (Decipher). Chaque carte est soigneusement inspectée selon les standards PSA/BGS avant expédition et protégée dans un toploader rigide à l'intérieur d'une enveloppe cartonnée.</p>
+        <p>Carte authentique du jeu <strong>The Lord of the Rings TCG</strong> (Decipher). Protégée dans un toploader rigide à l'intérieur d'une enveloppe cartonnée.</p>
       {% else %}
-        <p>Authentic <strong>The Lord of the Rings Trading Card Game</strong> card by Decipher. Every card is carefully graded against standard PSA/BGS criteria before listing. Shipped in a penny sleeve inside a rigid toploader, then bubble-wrapped in a stiff mailer — your card arrives the way it left.</p>
+        <p>Authentic <strong>The Lord of the Rings Trading Card Game</strong> card by Decipher. Shipped in a penny sleeve inside a rigid toploader, then bubble-wrapped in a stiff mailer — your card arrives the way it left.</p>
       {% endif %}
     </div>
 

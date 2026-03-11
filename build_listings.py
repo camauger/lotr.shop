@@ -1,5 +1,6 @@
 import csv
 import json
+import re
 from pathlib import Path
 from typing import cast
 
@@ -69,15 +70,52 @@ def render_description(env: Environment, marketplace: str, row: dict) -> str:
     )
 
 
+LISTINGS_HTML_DIR = Path("listings_html")
+
+
+def full_html_to_description_fragment(full_html: str) -> str:
+    """Extract only the HTML fragment to paste in eBay description: style(s) + body inner content."""
+    parts = []
+    # Extract all <style>...</style> blocks (so description has its styles)
+    for m in re.finditer(r"<style[^>]*>.*?</style>", full_html, re.DOTALL | re.IGNORECASE):
+        parts.append(m.group(0))
+    # Extract inner content of <body>...</body>
+    body_match = re.search(r"<body[^>]*>(.*)</body>", full_html, re.DOTALL | re.IGNORECASE)
+    if body_match:
+        parts.append(body_match.group(1).strip())
+    return "\n".join(parts) if parts else full_html
+
+
+def write_listing_html(
+    output_dir: Path,
+    sku: str,
+    description_fragment: str,
+    listing_title: str = "",
+) -> None:
+    """Write the HTML fragment for eBay description field (no full page wrapper)."""
+    safe_sku = sku.replace("/", "-").replace("\\", "-")
+    path = output_dir / f"{safe_sku}.html"
+    if listing_title:
+        content = f"<!-- {listing_title} -->\n{description_fragment}"
+    else:
+        content = description_fragment
+    path.write_text(content, encoding="utf-8")
+
+
 def build_csv(settings: dict, marketplace: str) -> None:
-    """Generate one eBay listings CSV for the given marketplace."""
+    """Generate one eBay listings CSV and one HTML file per listing for the marketplace."""
     templates_dir = settings["paths"]["templates"]
     processed_dir = settings["paths"]["processed"]
-    env = Environment(loader=FileSystemLoader(templates_dir))
+    env = Environment(
+        loader=FileSystemLoader(templates_dir, encoding="utf-8")
+    )
 
     data_dir = Path(settings["paths"].get("data", "data"))
     inventory_path = data_dir / "inventory.csv"
-    output_csv = Path(f"listings_ebay_{marketplace.replace('.', '_')}.csv")
+    marketplace_slug = marketplace.replace(".", "_")
+    output_csv = Path(f"listings_ebay_{marketplace_slug}.csv")
+    output_html_dir = LISTINGS_HTML_DIR / marketplace_slug
+    output_html_dir.mkdir(parents=True, exist_ok=True)
 
     currency = settings.get("currency", "CAD")
     url_map = load_image_urls(processed_dir)
@@ -93,7 +131,13 @@ def build_csv(settings: dict, marketplace: str) -> None:
 
         for row in reader:
             sku = row.get("SKU", "")
-            desc = render_description(env, marketplace, row)
+            title = row.get("Title", "")
+            number = row.get("CardID", "") or row.get("Number", "")
+            condition = row.get("Condition", "")
+            foil_suffix = " FOIL" if (row.get("Foil", "") or "").upper() == "Y" else ""
+            listing_title = f"LOTR TCG {title} {number} {condition}{foil_suffix}"
+            full_desc = render_description(env, marketplace, row)
+            desc_fragment = full_html_to_description_fragment(full_desc)
             urls = url_map.get(sku, {})
             picture1 = urls.get("recto", "")
             picture2 = urls.get("verso", "")
@@ -101,15 +145,16 @@ def build_csv(settings: dict, marketplace: str) -> None:
             writer.writerow(
                 {
                     "SKU": sku,
-                    "Title": row.get("Title", ""),
+                    "Title": title,
                     "Price": row.get("Price", ""),
                     "Currency": currency,
                     "Marketplace": marketplace,
-                    "DescriptionHTML": desc,
+                    "DescriptionHTML": desc_fragment,
                     "PictureURL1": picture1,
                     "PictureURL2": picture2,
                 }
             )
+            write_listing_html(output_html_dir, sku, desc_fragment, listing_title)
 
 
 def main() -> None:

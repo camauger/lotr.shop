@@ -111,7 +111,7 @@ Utiliser `ebay_api.environment: sandbox` pour les tests. **Dépendances** : `eba
 - `templates/description.html`
 - Optionnel : `processed/image_urls.json` ou `processed/image_urls_ebay.json`
 
-**Sortie** : `listings_ebay_ebay_com.csv`, `listings_ebay_ebay_ca.csv`, `listings_ebay_ebay_fr.csv` (selon la config).
+**Sortie** : CSV par marketplace (`listings_ebay_ebay_com.csv`, etc.) et un fichier HTML par annonce dans `listings_html/<marketplace>/<SKU>.html` (prévisualisation dans le navigateur).
 
 **Usage** :
 ```bash
@@ -119,6 +119,29 @@ python build_listings.py
 ```
 
 Le template reçoit notamment : title, set, set_name, number, condition, language, rarity, kind, culture, twilight, card_type, game_text, foil, foil_y, sku. **Dépendances** : Jinja2, PyYAML.
+
+---
+
+## publish_listings_ebay.py
+
+**Rôle** : Publier les annonces sur eBay via l’API Trading (AddItem). Lit l’inventaire et les listings générés (CSV par marketplace), envoie une requête AddItem par ligne et enregistre les ItemID dans `data/ebay_listing_ids.json`.
+
+**Entrée** :
+- `config/settings.yaml` (ebay_api, ebay_api.listing.category_id par site, duration, condition_id)
+- `data/inventory.csv`
+- `listings_ebay_<marketplace>.csv` (généré par build_listings.py)
+- `processed/image_urls_ebay.json` ou `image_urls.json` (URLs des images)
+
+**Sortie** : Annonces créées sur eBay ; `data/ebay_listing_ids.json` (SKU → item_id, marketplace).
+
+**Usage** :
+```bash
+python publish_listings_ebay.py --marketplace ebay.ca
+python publish_listings_ebay.py --dry-run
+python publish_listings_ebay.py --limit 5
+```
+
+Voir [Synchro eBay](ebay-sync.md). **Dépendances** : `ebaysdk`, PyYAML.
 
 ---
 

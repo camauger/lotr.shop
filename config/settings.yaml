@@ -63,3 +63,12 @@ ebay_api:
   cert_id: ""
   dev_id: ""
   auth_token: ""
+  # Synchro annonces : category_id = feuille « Trading Card Games > Lord of the Rings » (voir GetCategories)
+  # Ex. ebay.com ~ 2536, ebay.ca / ebay.fr : vérifier sur le site ou via API
+  listing:
+    category_id:
+      ebay.com: "2536"
+      ebay.ca: "2536"
+      ebay.fr: "2536"
+    duration: "GTC"  # GoodTillCancelled, ou 3, 5, 7, 10, 30 jours
+    condition_id: "1000"  # 1000 = New (Near Mint), adapter si besoin

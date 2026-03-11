@@ -39,8 +39,9 @@ upload/*
 .env
 *.secret
 
-# Generated CSVs
+# Generated CSVs and HTML listings
 listings_ebay_*.csv
+listings_html/
 
 # MkDocs build output
 site/
@@ -49,3 +50,6 @@ site/
 processed/manifest.json
 processed/image_urls.json
 processed/image_urls_ebay.json
+
+# eBay sync state
+data/ebay_listing_ids.json

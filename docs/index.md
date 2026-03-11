@@ -26,6 +26,8 @@ python build_listings.py     # CSV eBay
 | [Architecture](architecture.md) | Flux de données, format SKU, rôles des fichiers |
 | [Configuration](configuration.md) | `config/settings.yaml` (crop, chemins, marketplaces, API) |
 | [Scripts](scripts.md) | Référence de chaque script Python |
+| [Pousser les listings sur eBay](ebay-upload.md) | Import en masse : modèle eBay, colonnes, étapes Seller Hub |
+| [Synchro eBay](ebay-sync.md) | Publication via API (AddItem), ventes, relistage |
 
 ## Fichiers du projet
 
